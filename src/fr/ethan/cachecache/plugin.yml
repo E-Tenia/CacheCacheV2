@@ -1,0 +1,10 @@
+name: CacheCache
+main: fr.ethan.cachecache.Mains.CacheCache
+version: 1
+commands:
+  test:
+    description: Ceci est une commande de test
+    permission: test.use
+  cc:
+    description: infos, new
+    permission: cc.use
