@@ -8,3 +8,6 @@ commands:
   cc:
     description: infos, new
     permission: cc.use
+  acc:
+    description: infos, new
+    permission: acc.use

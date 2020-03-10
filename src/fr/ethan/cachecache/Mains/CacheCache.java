@@ -1,45 +1,40 @@
 package fr.ethan.cachecache.Mains;
 
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.plugin.Plugin;
+import fr.ethan.cachecache.Configs.GameConfig;
+import fr.ethan.cachecache.Listeners.GameCycle;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import fr.ethan.cachecache.Commands.UserCommands;
-import fr.ethan.cachecache.Configs.MainConfig;
+import fr.ethan.cachecache.Commands.AdminCommands;
 
-public class CacheCache extends JavaPlugin {
+import java.io.File;
+
+public class CacheCache extends JavaPlugin implements Listener {
     public static CacheCache plugin;
-    public int[] spawnPosition;
 
-    public static CacheCache getInstance() {
-        return plugin;
-    }
-
-    //private final Config config = new Config();
     String[] userCommandes = { "test" , "cc" };
+    String[] adminCommandes = { "acc" };
 
     @Override
     public void onEnable() {
         plugin = this;
         System.out.println("Lancement de CacheCache");
 
+        getServer().getPluginManager().registerEvents(this, this);
+
         //on initialise les commandes
         for (int i = 0; i < userCommandes.length ; i++) { getCommand(userCommandes[i]).setExecutor(new UserCommands()); };
+        for (int i = 0; i < adminCommandes.length ; i++) { getCommand(adminCommandes[i]).setExecutor(new AdminCommands()); };
 
-		//on charge le fichier config.yml
-        try {
-            FileConfiguration cfg = MainConfig.loadConfigFile();
-            if (cfg == null) {
-                plugin = null;
-                getServer().getPluginManager().disablePlugin((Plugin)this);
-                return;
-            }
-            MainConfig.readConfig(cfg);
-        } catch (Exception e) {
-            e.printStackTrace();
-            plugin = null;
-            getServer().getPluginManager().disablePlugin((Plugin)this);
-            return;
-        }
+        //config.yml
+        GameConfig.createConfig(plugin, "config.yml",false);
+        //games directory
+        new File(plugin.getDataFolder() + File.separator + "games").mkdirs();
+        //usercaches directory
+        new File(plugin.getDataFolder() + File.separator + "usercaches").mkdirs();
+
+        //tests
+
     }
 
     @Override
