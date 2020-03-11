@@ -92,9 +92,12 @@ public class GameCycle extends BukkitRunnable {
         		p.setGameMode(GameMode.SURVIVAL);
         		//restaurer inventaires
         	}
-        		if(!hiders.isEmpty()) {
+        	
+        	if(!hiders.isEmpty()) {
         			//victoire hiders
-        		}
+        	}
+        	
+        	CacheCache.gamelist.remove(this);
         	cancel(); 
         }
         ActionBarAPI.sendActionBarToAllPlayers(""+time,-1);
