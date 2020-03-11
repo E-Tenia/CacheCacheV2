@@ -1,4 +1,4 @@
-package fr.ethan.cachecache.Listeners;
+package fr.ethan.cachecache.GameElements;
 
 import fr.ethan.cachecache.Configs.GameConfig;
 import fr.ethan.cachecache.Mains.CacheCache;
@@ -14,7 +14,7 @@ import java.io.IOException;
 
 import static org.bukkit.Bukkit.getServer;
 
-public class Game implements Listener {
+public class Game {
     private static CacheCache plugin = CacheCache.plugin;
 
     public String name;

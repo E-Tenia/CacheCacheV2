@@ -1,4 +1,4 @@
-package fr.ethan.cachecache.Listeners;
+package fr.ethan.cachecache.GameElements;
 
 import fr.ethan.cachecache.Mains.CacheCache;
 import fr.ethan.cachecache.Utils.InventorySerializer;

@@ -1,15 +1,16 @@
 package fr.ethan.cachecache.Mains;
 
 import fr.ethan.cachecache.Configs.GameConfig;
-import fr.ethan.cachecache.Listeners.GameCycle;
-import org.bukkit.event.Listener;
+import fr.ethan.cachecache.GameElements.EventManager;
+import fr.ethan.cachecache.GameElements.GameCycle;
+
 import org.bukkit.plugin.java.JavaPlugin;
 import fr.ethan.cachecache.Commands.UserCommands;
 import fr.ethan.cachecache.Commands.AdminCommands;
 
 import java.io.File;
 
-public class CacheCache extends JavaPlugin implements Listener {
+public class CacheCache extends JavaPlugin {
     public static CacheCache plugin;
 
     String[] userCommandes = { "test" , "cc" };
@@ -19,8 +20,8 @@ public class CacheCache extends JavaPlugin implements Listener {
     public void onEnable() {
         plugin = this;
         System.out.println("Lancement de CacheCache");
-
-        getServer().getPluginManager().registerEvents(this, this);
+        //on initialise le EventManager
+        EventManager em = new EventManager();
 
         //on initialise les commandes
         for (int i = 0; i < userCommandes.length ; i++) { getCommand(userCommandes[i]).setExecutor(new UserCommands()); };

@@ -1,9 +1,9 @@
 package fr.ethan.cachecache.Commands;
 
 import fr.ethan.cachecache.Configs.GameConfig;
-import fr.ethan.cachecache.Listeners.Game;
-import fr.ethan.cachecache.Listeners.GameCycle;
-import fr.ethan.cachecache.Listeners.PlayerManager;
+import fr.ethan.cachecache.GameElements.Game;
+import fr.ethan.cachecache.GameElements.GameCycle;
+import fr.ethan.cachecache.GameElements.PlayerManager;
 import fr.ethan.cachecache.Mains.CacheCache;
 import fr.ethan.cachecache.Utils.Broadcast;
 import org.bukkit.Bukkit;

@@ -1,4 +1,4 @@
-package fr.ethan.cachecache.Listeners;
+package fr.ethan.cachecache.GameElements;
 
 import org.bukkit.scheduler.BukkitRunnable;
 

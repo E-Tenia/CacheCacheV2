@@ -1,6 +1,6 @@
 package fr.ethan.cachecache.Commands;
 
-import fr.ethan.cachecache.Listeners.GameCycle;
+import fr.ethan.cachecache.GameElements.GameCycle;
 import fr.ethan.cachecache.Mains.CacheCache;
 import fr.ethan.cachecache.Utils.Broadcast;
 import net.md_5.bungee.api.chat.ClickEvent;

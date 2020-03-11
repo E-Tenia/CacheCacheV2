@@ -1,4 +1,4 @@
-package fr.ethan.cachecache.Listeners;
+package fr.ethan.cachecache.GameElements;
 
 import fr.ethan.cachecache.Configs.GameConfig;
 import fr.ethan.cachecache.Mains.CacheCache;
@@ -8,13 +8,12 @@ import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Listener;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
 import java.util.ArrayList;
 
-public class GameCycle extends BukkitRunnable implements Listener {
+public class GameCycle extends BukkitRunnable {
     private static CacheCache plugin = CacheCache.plugin;
 
     public static String name;
@@ -35,7 +34,7 @@ public class GameCycle extends BukkitRunnable implements Listener {
         spawnPosition = yamlConfiguration.getLocation("Location");
         time = lobbyTime + gameTime + 10;
 
-        Listeners listeners = new Listeners();
+       EventManager EventManager = new EventManager();
     }
 
     /*public GameCycle(){
