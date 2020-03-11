@@ -9,10 +9,11 @@ import fr.ethan.cachecache.Commands.UserCommands;
 import fr.ethan.cachecache.Commands.AdminCommands;
 
 import java.io.File;
+import java.util.ArrayList;
 
 public class CacheCache extends JavaPlugin {
     public static CacheCache plugin;
-
+    public static ArrayList<GameCycle> gamelist = new ArrayList<GameCycle>();
     String[] userCommandes = { "test" , "cc" };
     String[] adminCommandes = { "acc" };
 
