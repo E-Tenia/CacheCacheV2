@@ -13,7 +13,7 @@ public class Team {
         name = initName;
     }
 
-    public boolean isMember(Player p){
+    public boolean hasMember(Player p){
         return members.contains(p);
     }
     
