@@ -18,7 +18,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 
 public class EventManager implements Listener {
-    private CacheCache plugin;// = CacheCache.plugin;
+    private CacheCache plugin = CacheCache.plugin;
     public boolean cancel;
     
     public EventManager(){
@@ -41,6 +41,7 @@ public class EventManager implements Listener {
     		event.setCancelled(true);
     	}
     }
+
     @EventHandler
     public void onFoodLvlChange(FoodLevelChangeEvent event){
     	Player player = null;
@@ -54,7 +55,8 @@ public class EventManager implements Listener {
     	if(player.getFoodLevel() == 20 /*&& joueur est en jeu*/) {
     		event.setCancelled(true);
     	}
-    }  
+    }
+
     @EventHandler
     public void onDropItem(PlayerDropItemEvent event) {
     	Player player = event.getPlayer();
@@ -63,6 +65,7 @@ public class EventManager implements Listener {
     		event.setCancelled(true);
     	}
     }
+
     @EventHandler
     public void onPickupItem(EntityPickupItemEvent event) {
     	Player player = null;
@@ -79,7 +82,7 @@ public class EventManager implements Listener {
     }
     
     //GESTION DES INTERRACTIONS JOUEURS
-    @EventHandler
+    /*@EventHandler
     public void onDamage(EntityDamageByEntityEvent event){
     	
     }
@@ -99,8 +102,9 @@ public class EventManager implements Listener {
     public void onDeath(PlayerDeathEvent event) {
     	
     }
+
     @EventHandler
     public void onRespawn(EntityResurrectEvent event) {
     	
-    }
+    }*/
 }

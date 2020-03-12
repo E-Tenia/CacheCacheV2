@@ -1,11 +1,8 @@
 package fr.ethan.cachecache.Commands;
 
 import fr.ethan.cachecache.Configs.GameConfig;
-import fr.ethan.cachecache.GameElements.Game;
-import fr.ethan.cachecache.GameElements.GameCycle;
 import fr.ethan.cachecache.GameElements.PlayerManager;
 import fr.ethan.cachecache.Mains.CacheCache;
-import fr.ethan.cachecache.Utils.Broadcast;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -13,28 +10,43 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 public class AdminCommands implements CommandExecutor {
-    private static CacheCache plugin = CacheCache.plugin;
+    //private static CacheCache plugin = CacheCache.plugin;
+
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String msg, String[] args) {
         if (cmd.getName().equalsIgnoreCase("acc")) {
             switch(args[0]) {
                 case "setgame":
+                    // paramètres : name , time , limite , location
                     if (sender instanceof Player == true) { if(args.length != 4) { sender.sendMessage("Bonne utilisation : /acc setgame <nom> <durée> <limites>"); return true; }
-                        // paramètres : name , time , limite , location
-                        Game.setGame(args[1],args[2],args[3],Bukkit.getPlayerExact(sender.getName()).getLocation());
+                        GameConfig.setGame(args[1],args[2],args[3],Bukkit.getPlayerExact(sender.getName()).getLocation());
                     } else if(sender instanceof Player == false) {
                         sender.sendMessage("§4[CacheCache] Seul les Joueurs sont autorisés à exécuter cette commande.");
                     }
                     break;
                 case "spawngame":
                     // paramètres : name , player
-                    Game.spawnGame(args[1],Bukkit.getPlayerExact(sender.getName()));
+                    GameConfig.spawnGame(args[1],Bukkit.getPlayerExact(sender.getName()));
                     break;
                 case "remgame":
                     // paramètres : name
-                    Game.removeGame(args[1]);
+                    GameConfig.removeGame(args[1]);
+                    break;
+                case "gamequeue":
+                    CacheCache.printGameQueue();
                     break;
                 case "cancel":
+                    if (sender instanceof Player == true) {
+                        if (args[1] == "all") {
+                            //TODO : boucle for qui annule toutes  les parties
+                        } else if (args.length == 1) {
+                            sender.sendMessage("§4Veuillez indiquer une partie à annuler. (all pour toutes les annuler)");
+                        } else {
+                            //TODO : annuler la partie args[1]
+                        }
+                    } else if(sender instanceof Player == false) {
+                        sender.sendMessage("§4[CacheCache] Seul les Joueurs sont autorisés à exécuter cette commande.");
+                    }
                     break;
                 case "clear":
                     PlayerManager.saveInventory(Bukkit.getPlayerExact(sender.getName()));

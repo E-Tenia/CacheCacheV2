@@ -27,29 +27,29 @@ public class GameCycle extends BukkitRunnable {
     public static Team hiders;
     public static Team seekers;
     public static Location spawnPosition;
-    public static ArrayList<Player> players = new ArrayList<Player>();
-    public static EventManager EventManager = new EventManager();
+    public static ArrayList<Player> playerList = new ArrayList<Player>();
 
     public GameCycle(String initName) {
+        //on initialise le EventManager
+        EventManager em = new EventManager();
+
+        //si lors de la commande on a pas renseigné de nom on lance une partie aléatoire, sinon partie indiquée
         if(initName == null) { name = randomGame(); }
-        else { name = initName + ".yml"; }
+        else { name = initName; }
 
         File file = new File(plugin.getDataFolder() + File.separator + "games", name);
         FileConfiguration yamlConfiguration = YamlConfiguration.loadConfiguration(file);
 
-        lobbyTime = 20/*yamlConfiguration.getInt("lobbyTime")*/; //rendre Ã§a automatique
+        //temps
+        lobbyTime = 20/*yamlConfiguration.getInt("lobbyTime")*/; //TODO : rendre ça automatique
         gameTime = yamlConfiguration.getInt("Time");
         spawnPosition = yamlConfiguration.getLocation("Location");
         time = lobbyTime + gameTime + 10;
     }
 
-    /*public GameCycle(){
-        name = "default";
-        lobbyTime = 40;
-        gameTime = 40;
-        totalTime = lobbyTime + gameTime + 10;
-        time = totalTime;
-    }*/
+    public String getName() {
+        return name;
+    }
 
     @Override
     public void run() {
@@ -69,7 +69,7 @@ public class GameCycle extends BukkitRunnable {
         
         if(time == gameTime) {
         	//lancement partie
-        	ArrayList<Player> teams = random(players);
+            ArrayList<Player> teams = random(playerList);
         	for(Player p : teams) {
         		if(seekers.getSize() >= hiders.getSize()) {
         			hiders.add(p);
@@ -87,14 +87,14 @@ public class GameCycle extends BukkitRunnable {
         	}
         }
 
-        if(time == 0 || EventManager.cancel) { 
-        	for(Player p : players) {
+        if(time == 0 /*|| EventManager.cancel*/) {
+        	for(Player p : playerList) {
         		p.setGameMode(GameMode.SURVIVAL);
-        		//restaurer inventaires
+        		//TODO : restaurer inventaires
         	}
         	
         	if(!hiders.isEmpty()) {
-        			//victoire hiders
+        			//TODO : victoire hiders
         	}
         	
         	CacheCache.gamelist.remove(this);
@@ -121,28 +121,13 @@ public class GameCycle extends BukkitRunnable {
             max = list.size() - 1;
             int nombreAleat = min + (int)(Math.random() * ((max - min) + 1));
 
-
-            System.out.println(nombreAleat);
-            System.out.println("Liste A : "+list);
-
             list.add(list.get(nombreAleat));
             list.remove(nombreAleat);
-
-            System.out.println("Liste B : "+list);
-            System.out.println("---------");
         }
        return list;
 	}
     
     public void addPlayer(Player p) {
-    	players.add(p);
+    	playerList.add(p);
     }
-
-    /*public static void readGameConfig(String configName) { //ici on lit le X.yml et on stock dans les variables
-        YamlConfiguration yamlConfiguration = new YamlConfiguration();
-        File file = new File(CacheCache.plugin.getDataFolder(), configName);
-
-        yamlConfiguration = YamlConfiguration.loadConfiguration(file);
-        //spawnPosition = stringToDouble(yamlConfiguration.getString("position-spawn", "0,0,0").split(","));
-    }*/
 }
