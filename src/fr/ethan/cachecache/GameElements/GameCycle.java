@@ -5,6 +5,7 @@ import fr.ethan.cachecache.Mains.CacheCache;
 import fr.ethan.cachecache.Utils.ActionBarAPI.ActionBarAPI;
 import fr.ethan.cachecache.Utils.Broadcast;
 
+import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -45,6 +46,10 @@ public class GameCycle extends BukkitRunnable {
         gameTime = yamlConfiguration.getInt("Time");
         spawnPosition = yamlConfiguration.getLocation("Location");
         time = lobbyTime + gameTime + 10;
+    }
+
+    public static int getTime() {
+        return time;
     }
 
     public String getName() {
@@ -94,11 +99,11 @@ public class GameCycle extends BukkitRunnable {
         	}
         	
         	if(!hiders.isEmpty()) {
-        			//TODO : victoire hiders
+        	    //TODO : victoire hiders
         	}
-        	
-        	CacheCache.gamelist.remove(this);
-        	cancel(); 
+
+            CacheCache.gameQueue.remove(this);
+            cancel();
         }
         ActionBarAPI.sendActionBarToAllPlayers(""+time,-1);
         time--;
@@ -117,7 +122,7 @@ public class GameCycle extends BukkitRunnable {
 		int min = 0, max = list.size();
         int r = min + (int)(Math.random() * ((max - min) + 1));
         for(int i = 0; i < r; i++) {
-            min = 0; 
+            min = 0;
             max = list.size() - 1;
             int nombreAleat = min + (int)(Math.random() * ((max - min) + 1));
 
@@ -126,6 +131,22 @@ public class GameCycle extends BukkitRunnable {
         }
        return list;
 	}
+
+	public static void printPlayerList(String gameName, Player p) {
+        if(gameName.isEmpty()){
+            p.sendMessage(ChatColor.RED + "Il n'y a pas de partie en cours.");
+        } else if(!CacheCache.gameQueue.containsKey(gameName)){
+            p.sendMessage(ChatColor.RED + "Cette partie n'est pas lancé.");
+        } else {
+            if(playerList.isEmpty()){
+                p.sendMessage(ChatColor.RED + "Il n'y a pas de joueur dans cette partie.");
+            } else {
+                for(int i = 0; i < playerList.size(); i++) {
+                    p.sendMessage(""+playerList.get(i));
+                }
+            }
+        }
+    }
     
     public void addPlayer(Player p) {
     	playerList.add(p);

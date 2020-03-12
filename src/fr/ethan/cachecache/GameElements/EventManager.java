@@ -36,7 +36,7 @@ public class EventManager implements Listener {
     	else {
     		return;
     	}
-    	//si joueur est en jeu et raison est satiété
+    	//si joueur est en jeu et raison est satiï¿½tï¿½
     	if(reason == RegainReason.SATIATED /*&& joueur est en jeu*/) {
     		event.setCancelled(true);
     	}
@@ -82,7 +82,7 @@ public class EventManager implements Listener {
     }
     
     //GESTION DES INTERRACTIONS JOUEURS
-    /*@EventHandler
+    @EventHandler
     public void onDamage(EntityDamageByEntityEvent event){
     	
     }
@@ -106,5 +106,5 @@ public class EventManager implements Listener {
     @EventHandler
     public void onRespawn(EntityResurrectEvent event) {
     	
-    }*/
+    }
 }

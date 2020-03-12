@@ -1,24 +1,23 @@
 package fr.ethan.cachecache.Mains;
 
 import fr.ethan.cachecache.Configs.GameConfig;
-import fr.ethan.cachecache.GameElements.GameCycle;
 
+import fr.ethan.cachecache.GameElements.GameCycle;
+import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import fr.ethan.cachecache.Commands.UserCommands;
 import fr.ethan.cachecache.Commands.AdminCommands;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 public class CacheCache extends JavaPlugin {
     public static CacheCache plugin;
-    public static ArrayList<GameCycle> gamelist = new ArrayList<GameCycle>();
 
     // name , task
-    public static Map<String, BukkitRunnable> gameQueue = new HashMap<>();
+    public static Map<String, GameCycle> gameQueue = new HashMap<>();
 
     String[] userCommandes = { "test" , "cc" };
     String[] adminCommandes = { "acc" };
@@ -45,10 +44,14 @@ public class CacheCache extends JavaPlugin {
         System.out.println("Arrêt de CacheCache");
     }
 
-    public static void printGameQueue()
+    public static void printGameQueue(Player p)
     {
-        gameQueue.entrySet().forEach(entry->{
-            System.out.println(entry.getKey() + " " + entry.getValue());
-        });
+        if(gameQueue.isEmpty()) {
+            p.sendMessage(ChatColor.RED + "Il n'y a pas de partie en cours.");
+        } else {
+            gameQueue.entrySet().forEach(entry -> {
+                p.sendMessage(entry.getKey() + " : " + entry.getValue().getTime() + "\n");
+            });
+        }
     }
 }

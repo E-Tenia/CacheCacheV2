@@ -5,6 +5,7 @@ import fr.ethan.cachecache.Mains.CacheCache;
 import fr.ethan.cachecache.Utils.Broadcast;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -21,7 +22,7 @@ public class UserCommands implements CommandExecutor {
                     case "help":
                         Broadcast.cchelp(Bukkit.getPlayerExact(sender.getName()));
                         break;
-                    case "start": //TODO : à revoir pour optimiser la structure de donnée
+                    case "start":
                         String name;
                         if(args.length == 1) { name = null; } else { name = args[1]; }
                         GameCycle game = new GameCycle(name);
@@ -29,28 +30,31 @@ public class UserCommands implements CommandExecutor {
                         CacheCache.gameQueue.put(game.getName(),game);
                         game.runTaskTimer(plugin,0,20);
                         break;
+                    case "gamequeue":
+                        CacheCache.printGameQueue(Bukkit.getPlayerExact(sender.getName()));
+                        break;
                     case "join":
-                    	if(!(sender instanceof Player)) {
-                    		sender.sendMessage("§4[CacheCache] Seul les Joueurs sont autorisés à exécuter cette commande.");
-                    		return true;
-                    	}
-                    	for(GameCycle gm : CacheCache.gamelist) {
-                    		if(gm.name == args[1]) {
-                    			if(gm.lobbyTime > 0) {
-                    				gm.addPlayer(Bukkit.getPlayerExact(sender.getName()));
-                    			}
-                    			else {
-                    				sender.sendMessage("La partie a déjà commencé.");
-                    			}
-                    		}
-                    	}
+                        if(!(sender instanceof Player)) {
+                            sender.sendMessage(ChatColor.RED + "Seul les Joueurs sont autorisés à exécuter cette commande.");
+                            return true;
+                        } else if(sender instanceof Player) {
+                            if(args.length != 2) { sender.sendMessage(ChatColor.RED + "Bonne utilisation : /cc join <nom de partie>");
+                            } else {
+                                if(CacheCache.gameQueue.get(args[1]).lobbyTime > 0) {
+                                    CacheCache.gameQueue.get(args[1]).addPlayer(Bukkit.getPlayerExact(sender.getName()));
+                                }
+                                else {
+                                    sender.sendMessage(ChatColor.RED + "La partie a déjà commencé.");
+                                }
+                            }
+                        }
                         break;
                     default:
-                        sender.sendMessage("§4Erreur de commande. Essayez /cc help.");
+                        sender.sendMessage(ChatColor.RED + "Erreur de commande. Essayez /cc help.");
                         break;
                 }
             } else {
-                sender.sendMessage("§4Erreur de commande. Essayez /cc help.");
+                sender.sendMessage(ChatColor.RED + "Erreur de commande. Essayez /cc help.");
             }
         }
         return false;

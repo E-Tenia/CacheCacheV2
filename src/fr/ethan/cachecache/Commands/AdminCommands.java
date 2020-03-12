@@ -1,9 +1,11 @@
 package fr.ethan.cachecache.Commands;
 
 import fr.ethan.cachecache.Configs.GameConfig;
+import fr.ethan.cachecache.GameElements.GameCycle;
 import fr.ethan.cachecache.GameElements.PlayerManager;
 import fr.ethan.cachecache.Mains.CacheCache;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -21,7 +23,7 @@ public class AdminCommands implements CommandExecutor {
                     if (sender instanceof Player == true) { if(args.length != 4) { sender.sendMessage("Bonne utilisation : /acc setgame <nom> <durée> <limites>"); return true; }
                         GameConfig.setGame(args[1],args[2],args[3],Bukkit.getPlayerExact(sender.getName()).getLocation());
                     } else if(sender instanceof Player == false) {
-                        sender.sendMessage("§4[CacheCache] Seul les Joueurs sont autorisés à exécuter cette commande.");
+                        sender.sendMessage(ChatColor.RED + "Seul les Joueurs sont autorisés à exécuter cette commande.");
                     }
                     break;
                 case "spawngame":
@@ -32,21 +34,30 @@ public class AdminCommands implements CommandExecutor {
                     // paramètres : name
                     GameConfig.removeGame(args[1]);
                     break;
-                case "gamequeue":
-                    CacheCache.printGameQueue();
-                    break;
                 case "cancel":
                     if (sender instanceof Player == true) {
-                        if (args[1] == "all") {
-                            //TODO : boucle for qui annule toutes  les parties
-                        } else if (args.length == 1) {
-                            sender.sendMessage("§4Veuillez indiquer une partie à annuler. (all pour toutes les annuler)");
+                        if(CacheCache.gameQueue.isEmpty()) {
+                            sender.sendMessage(ChatColor.RED + "Il n'y a pas de partie en cours.");
                         } else {
-                            //TODO : annuler la partie args[1]
+                            if (args[1].equals("all")) {
+                                CacheCache.gameQueue.entrySet().forEach(entry -> {
+                                    entry.getValue().cancel();
+                                });
+                                CacheCache.gameQueue.clear();
+                                sender.sendMessage(ChatColor.GREEN + "Toutes les parties ont été annulées.");
+                            } else if (args.length == 1) {
+                                sender.sendMessage(ChatColor.RED + "Veuillez indiquer une partie à annuler. (all pour toutes les annuler)");
+                            } else if(!args[1].equals("all") || args.length == 2) {
+                                CacheCache.gameQueue.get(args[1]).cancel();
+                                CacheCache.gameQueue.remove(args[1]);
+                            }
                         }
                     } else if(sender instanceof Player == false) {
-                        sender.sendMessage("§4[CacheCache] Seul les Joueurs sont autorisés à exécuter cette commande.");
+                        sender.sendMessage(ChatColor.RED + "Seul les Joueurs sont autorisés à exécuter cette commande.");
                     }
+                    break;
+                case "playerlist":
+                    GameCycle.printPlayerList(args[1],Bukkit.getPlayerExact(sender.getName()));
                     break;
                 case "clear":
                     PlayerManager.saveInventory(Bukkit.getPlayerExact(sender.getName()));
@@ -62,7 +73,7 @@ public class AdminCommands implements CommandExecutor {
                     GameConfig.printListGame(GameConfig.listGame(),Bukkit.getPlayerExact(sender.getName()));
                     break;
                 default:
-                    sender.sendMessage("§4Erreur de commande. Essayez /acc help.");
+                    sender.sendMessage(ChatColor.RED + "Erreur de commande. Essayez /acc help.");
                     break;
             }
         }
