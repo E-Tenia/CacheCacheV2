@@ -29,14 +29,17 @@ public class GameCycle extends BukkitRunnable {
     public static Team seekers;
     public static Location spawnPosition;
     public static ArrayList<Player> playerList = new ArrayList<Player>();
+    public static boolean hasStarted;
 
     public GameCycle(String initName) {
         //on initialise le EventManager
         EventManager em = new EventManager();
 
         //si lors de la commande on a pas renseigné de nom on lance une partie aléatoire, sinon partie indiquée
-        if(initName == null) { name = randomGame(); }
-        else { name = initName; }
+        if(initName == null) {
+            String g = randomGame();
+            name = g.substring(0,g.lastIndexOf(".")); }
+        else { name = initName.substring(0,initName.lastIndexOf(".")); }
 
         File file = new File(plugin.getDataFolder() + File.separator + "games", name);
         FileConfiguration yamlConfiguration = YamlConfiguration.loadConfiguration(file);
@@ -74,6 +77,7 @@ public class GameCycle extends BukkitRunnable {
         
         if(time == gameTime) {
         	//lancement partie
+            hasStarted = true;
             ArrayList<Player> teams = random(playerList);
         	for(Player p : teams) {
         		if(seekers.getSize() >= hiders.getSize()) {
@@ -92,11 +96,16 @@ public class GameCycle extends BukkitRunnable {
         	}
         }
 
-        if(time == 0 /*|| EventManager.cancel*/) {
+        if(time == 0 || EventManager.cancel) {
         	for(Player p : playerList) {
         		p.setGameMode(GameMode.SURVIVAL);
-        		//TODO : restaurer inventaires
-        	}
+        		CacheCache.inGame.remove(p);
+                try {
+                    PlayerManager.restoreInventory(p);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         	
         	if(!hiders.isEmpty()) {
         	    //TODO : victoire hiders
@@ -110,12 +119,17 @@ public class GameCycle extends BukkitRunnable {
     }
 
     public static String randomGame() {
-        String[] gameList = GameConfig.listGame();
+        ArrayList<String> gameList = new ArrayList<String>();
+        for(String game : GameConfig.listGame()){
+            if(CacheCache.gameQueue.containsKey(game) && CacheCache.gameQueue.get(game).hasStarted){
+                gameList.add(game);
+            }
+        }
 
-        int min = 0, max = gameList.length;
+        int min = 0, max = gameList.size();
         int r = min + (int)(Math.random() * ((max - min)));
 
-        return gameList[r];
+        return gameList.get(r);
     }
     
     public ArrayList<Player> random(ArrayList<Player> list){

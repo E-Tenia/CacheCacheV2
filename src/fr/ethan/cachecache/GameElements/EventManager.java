@@ -19,7 +19,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 
 public class EventManager implements Listener {
     private CacheCache plugin = CacheCache.plugin;
-    public boolean cancel;
+    public static boolean cancel;
     
     public EventManager(){
        this.plugin.getServer().getPluginManager().registerEvents(this, plugin);

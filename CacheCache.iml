@@ -9,21 +9,32 @@
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="jar://$USER_HOME$/Desktop/Dépendances Plugins/spigot-1.15.2.jar!/" />
+          <root url="jar://$MODULE_DIR$/../Dépendances Plugins/spigot-1.15.2.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES>
-          <root url="jar://$USER_HOME$/Desktop/Dépendances Plugins/spigot-1.15.2.jar!/" />
+          <root url="jar://$MODULE_DIR$/../Dépendances Plugins/spigot-1.15.2.jar!/" />
         </SOURCES>
       </library>
     </orderEntry>
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="jar://$USER_HOME$/Desktop/Dépendances Plugins/json-20190722.jar!/" />
+          <root url="jar://$MODULE_DIR$/../Dépendances Plugins/json-20190722.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../test server/spigot 1.15.2.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="jar://$MODULE_DIR$/../test server/spigot 1.15.2.jar!/" />
+        </SOURCES>
       </library>
     </orderEntry>
   </component>

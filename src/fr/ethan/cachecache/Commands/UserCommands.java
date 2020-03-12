@@ -1,5 +1,6 @@
 package fr.ethan.cachecache.Commands;
 
+import com.sun.istack.internal.NotNull;
 import fr.ethan.cachecache.GameElements.GameCycle;
 import fr.ethan.cachecache.Mains.CacheCache;
 import fr.ethan.cachecache.Utils.Broadcast;
@@ -15,7 +16,7 @@ public class UserCommands implements CommandExecutor {
     private static CacheCache plugin = CacheCache.plugin;
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String msg, String[] args) {
+    public boolean onCommand(CommandSender sender, Command cmd,String msg, String[] args) {
         if (cmd.getName().equalsIgnoreCase("cc")) {
             if(args.length > 0) {
                 switch(args[0]) {
@@ -24,7 +25,14 @@ public class UserCommands implements CommandExecutor {
                         break;
                     case "start":
                         String name;
-                        if(args.length == 1) { name = null; } else { name = args[1]; }
+                        if(args.length == 1) { name = null; }
+                        else if(args.length == 2){ name = args[1];
+                            if(CacheCache.gameQueue.containsKey(args[1])){
+                                sender.sendMessage(ChatColor.RED + "La partie existe déjà");
+                            return true;
+                            }
+                        }
+                        else {sender.sendMessage("Erreur, trop d'arguments : /cc start <name>"); return true;}
                         GameCycle game = new GameCycle(name);
 
                         CacheCache.gameQueue.put(game.getName(),game);
@@ -37,11 +45,17 @@ public class UserCommands implements CommandExecutor {
                         if(!(sender instanceof Player)) {
                             sender.sendMessage(ChatColor.RED + "Seul les Joueurs sont autorisés à exécuter cette commande.");
                             return true;
-                        } else if(sender instanceof Player) {
+                        } else {
                             if(args.length != 2) { sender.sendMessage(ChatColor.RED + "Bonne utilisation : /cc join <nom de partie>");
                             } else {
                                 if(CacheCache.gameQueue.get(args[1]).lobbyTime > 0) {
-                                    CacheCache.gameQueue.get(args[1]).addPlayer(Bukkit.getPlayerExact(sender.getName()));
+                                    if(!CacheCache.inGame.contains(Bukkit.getPlayerExact(sender.getName()))) {
+                                        CacheCache.inGame.add(Bukkit.getPlayerExact(sender.getName()));
+                                        CacheCache.gameQueue.get(args[1]).addPlayer(Bukkit.getPlayerExact(sender.getName()));
+                                    }
+                                    else{
+                                        sender.sendMessage(ChatColor.RED + "Vous êtes déjà en jeu");
+                                    }
                                 }
                                 else {
                                     sender.sendMessage(ChatColor.RED + "La partie a déjà commencé.");
