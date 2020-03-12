@@ -38,16 +38,17 @@ public class GameCycle extends BukkitRunnable {
         //si lors de la commande on a pas renseigné de nom on lance une partie aléatoire, sinon partie indiquée
         if(initName == null) {
             String g = randomGame();
-            name = g.substring(0,g.lastIndexOf(".")); }
-        else { name = initName.substring(0,initName.lastIndexOf(".")); }
+            name = randomGame(); }
+        else { name = initName; }
 
-        File file = new File(plugin.getDataFolder() + File.separator + "games", name);
+        File file = new File(plugin.getDataFolder() + File.separator + "games", name + ".yml");
         FileConfiguration yamlConfiguration = YamlConfiguration.loadConfiguration(file);
 
         //temps
         lobbyTime = 20/*yamlConfiguration.getInt("lobbyTime")*/; //TODO : rendre ça automatique
         gameTime = yamlConfiguration.getInt("Time");
         spawnPosition = yamlConfiguration.getLocation("Location");
+        Double Limits = yamlConfiguration.getDouble("limits");
         time = lobbyTime + gameTime + 10;
     }
 

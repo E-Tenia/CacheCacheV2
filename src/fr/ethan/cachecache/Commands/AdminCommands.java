@@ -19,9 +19,11 @@ public class AdminCommands implements CommandExecutor {
         if (cmd.getName().equalsIgnoreCase("acc")) {
             switch(args[0]) {
                 case "setgame":
-                    // paramètres : name , time , limite , location
-                    if (sender instanceof Player == true) { if(args.length != 4) { sender.sendMessage("Bonne utilisation : /acc setgame <nom> <durée> <limites>"); return true; }
-                        GameConfig.setGame(args[1],args[2],args[3],Bukkit.getPlayerExact(sender.getName()).getLocation());
+                    // paramètres : name , time , limite , location, autotime
+                    boolean a = false;
+                    if (sender instanceof Player == true) { if(args.length != 4) { sender.sendMessage("Bonne utilisation : /acc setgame <nom> <durée> <limites> <auto(y)>"); return true; }
+                        if(args[4].equals("y")) { a = true; }
+                        GameConfig.setGame(args[1],args[2],args[3],Bukkit.getPlayerExact(sender.getName()).getLocation(),a);
                     } else if(sender instanceof Player == false) {
                         sender.sendMessage(ChatColor.RED + "Seul les Joueurs sont autorisés à exécuter cette commande.");
                     }

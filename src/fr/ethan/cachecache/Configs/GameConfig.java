@@ -63,7 +63,7 @@ public class GameConfig {
     }
 
     //methodes d'écriture et de lecture
-    public static void setGame(String name, String time, String limit, Location loc) {
+    public static void setGame(String name, String time,String limit, Location loc,boolean autotime) {
         CacheCache plugin = CacheCache.plugin;
 
         File file = new File(plugin.getDataFolder() + File.separator + "games", name + ".yml");
@@ -72,10 +72,14 @@ public class GameConfig {
 
         FileConfiguration gameConfig = YamlConfiguration.loadConfiguration(file);
 
-        gameConfig.set("Time",Integer.parseInt(time));
-        gameConfig.set("Limit",limit);
-        gameConfig.set("Location",loc);
-
+        if(autotime) {
+            gameConfig.set("Time", Double.parseDouble(limit) * 0.65);
+        }
+        else{
+            gameConfig.set("Time", time);
+        }
+        gameConfig.set("Limit", limit);
+        gameConfig.set("Location", loc);
         try {
             gameConfig.save(file);
         } catch (IOException e) {
