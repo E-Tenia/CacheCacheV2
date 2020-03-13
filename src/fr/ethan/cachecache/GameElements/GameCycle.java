@@ -17,6 +17,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class GameCycle extends BukkitRunnable {
     private static CacheCache plugin = CacheCache.plugin;
@@ -29,15 +30,15 @@ public class GameCycle extends BukkitRunnable {
     public static Team seekers;
     public static Location spawnPosition;
     public static ArrayList<Player> playerList = new ArrayList<Player>();
+    public static ArrayList<String> gameList = new ArrayList<String>();
     public static boolean hasStarted;
 
     public GameCycle(String initName) {
         //on initialise le EventManager
-        EventManager em = new EventManager();
+        EventManager em = new EventManager(hiders,seekers);
 
-        //si lors de la commande on a pas renseigné de nom on lance une partie aléatoire, sinon partie indiquée
+        //si lors de la commande on a pas renseignÃ© de nom on lance une partie alÃ©atoire, sinon partie indiquÃ©e
         if(initName == null) {
-            String g = randomGame();
             name = randomGame(); }
         else { name = initName; }
 
@@ -45,11 +46,13 @@ public class GameCycle extends BukkitRunnable {
         FileConfiguration yamlConfiguration = YamlConfiguration.loadConfiguration(file);
 
         //temps
-        lobbyTime = 20/*yamlConfiguration.getInt("lobbyTime")*/; //TODO : rendre ça automatique
+        lobbyTime = 20/*yamlConfiguration.getInt("lobbyTime")*/; //TODO : rendre Ã§a automatique
         gameTime = yamlConfiguration.getInt("Time");
         spawnPosition = yamlConfiguration.getLocation("Location");
         Double Limits = yamlConfiguration.getDouble("limits");
         time = lobbyTime + gameTime + 10;
+
+        hasStarted = false;
     }
 
     public static int getTime() {
@@ -64,21 +67,25 @@ public class GameCycle extends BukkitRunnable {
     public void run() {
         if(time == lobbyTime + gameTime + 10){
             System.out.println(name);
+            hasStarted = true;
         }
 
         if(time == (gameTime + 10)) {
             hiders = new Team("hiders");
             seekers = new Team("seekers");
-            Broadcast.broadcaster("Fin du lobby - téléportation vers la partie"+time);
+            Broadcast.broadcaster("Fin du lobby - tÃ©lÃ©portation vers la partie"+time);
         }
 
         if(time <= (gameTime + 5) && time > gameTime) {
-            Broadcast.broadcaster("Début de la partie dans "+time);
+            Broadcast.broadcaster("DÃ©but de la partie dans "+time);
         }
         
         if(time == gameTime) {
+            if(playerList.size() < 2){
+                Broadcast.broadcaster(ChatColor.RED+"Pas assez de joueurs pour commencer la partie.");
+                cancel();
+            }
         	//lancement partie
-            hasStarted = true;
             ArrayList<Player> teams = random(playerList);
         	for(Player p : teams) {
         		if(seekers.getSize() >= hiders.getSize()) {
@@ -111,21 +118,22 @@ public class GameCycle extends BukkitRunnable {
         	if(!hiders.isEmpty()) {
         	    //TODO : victoire hiders
         	}
-
+            hasStarted = false;
             CacheCache.gameQueue.remove(this);
             cancel();
         }
-        ActionBarAPI.sendActionBarToAllPlayers(""+time,-1);
+        ActionBarAPI.sendActionBarToAllPlayers(""+time,-1); //TODO : remplacer par le scoreboard (uniquement sur les joueurs ingame)
         time--;
     }
 
     public static String randomGame() {
-        ArrayList<String> gameList = new ArrayList<String>();
-        for(String game : GameConfig.listGame()){
-            if(CacheCache.gameQueue.containsKey(game) && CacheCache.gameQueue.get(game).hasStarted){
-                gameList.add(game);
-            }
+        gameList = new ArrayList<String>(Arrays.asList(GameConfig.listGame()));
+
+        for(int i = 0; i < gameList.size(); i++){
+            gameList.set(i,gameList.get(i).substring(0,gameList.get(i).lastIndexOf(".")));
         }
+
+        gameList.removeAll(CacheCache.gameQueue.keySet());
 
         int min = 0, max = gameList.size();
         int r = min + (int)(Math.random() * ((max - min)));
@@ -151,7 +159,7 @@ public class GameCycle extends BukkitRunnable {
         if(gameName.isEmpty()){
             p.sendMessage(ChatColor.RED + "Il n'y a pas de partie en cours.");
         } else if(!CacheCache.gameQueue.containsKey(gameName)){
-            p.sendMessage(ChatColor.RED + "Cette partie n'est pas lancé.");
+            p.sendMessage(ChatColor.RED + "Cette partie n'est pas lancÃ©e.");
         } else {
             if(playerList.isEmpty()){
                 p.sendMessage(ChatColor.RED + "Il n'y a pas de joueur dans cette partie.");

@@ -39,6 +39,11 @@ public class CacheCache extends JavaPlugin {
         new File(plugin.getDataFolder() + File.separator + "games").mkdirs();
         //usercaches directory
         new File(plugin.getDataFolder() + File.separator + "usercaches").mkdirs();
+
+        //test
+        /*for(int i = 0; i < 11; i++){
+            System.out.println(GameCycle.randomGame());
+        }*/
     }
 
     @Override

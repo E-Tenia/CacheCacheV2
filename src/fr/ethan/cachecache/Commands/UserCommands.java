@@ -1,6 +1,7 @@
 package fr.ethan.cachecache.Commands;
 
 import com.sun.istack.internal.NotNull;
+import fr.ethan.cachecache.Configs.GameConfig;
 import fr.ethan.cachecache.GameElements.GameCycle;
 import fr.ethan.cachecache.Mains.CacheCache;
 import fr.ethan.cachecache.Utils.Broadcast;
@@ -32,11 +33,14 @@ public class UserCommands implements CommandExecutor {
                             return true;
                             }
                         }
-                        else {sender.sendMessage("Erreur, trop d'arguments : /cc start <name>"); return true;}
-                        GameCycle game = new GameCycle(name);
-
-                        CacheCache.gameQueue.put(game.getName(),game);
-                        game.runTaskTimer(plugin,0,20);
+                        else {sender.sendMessage(ChatColor.RED + "Erreur, trop d'arguments : /cc start <name>"); return true;}
+                        if(CacheCache.gameQueue.size() == GameConfig.listGame().length) {
+                            sender.sendMessage(ChatColor.RED + "Erreur, il n'y a pas de partie disponible.");
+                        } else {
+                            GameCycle game = new GameCycle(name);
+                            CacheCache.gameQueue.put(game.getName(),game);
+                            game.runTaskTimer(plugin,0,20);
+                        }
                         break;
                     case "gamequeue":
                         CacheCache.printGameQueue(Bukkit.getPlayerExact(sender.getName()));
@@ -54,7 +58,7 @@ public class UserCommands implements CommandExecutor {
                                         CacheCache.gameQueue.get(args[1]).addPlayer(Bukkit.getPlayerExact(sender.getName()));
                                     }
                                     else{
-                                        sender.sendMessage(ChatColor.RED + "Vous êtes déjà en jeu");
+                                        sender.sendMessage(ChatColor.RED + "Vous êtes déjà en jeu.");
                                     }
                                 }
                                 else {
