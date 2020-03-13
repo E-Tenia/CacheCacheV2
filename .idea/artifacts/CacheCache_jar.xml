@@ -5,7 +5,6 @@
       <element id="module-output" name="CacheCache" />
       <element id="file-copy" path="$PROJECT_DIR$/src/fr/ethan/cachecache/plugin.yml" />
       <element id="file-copy" path="$PROJECT_DIR$/src/fr/ethan/cachecache/config.yml" />
-      <element id="file-copy" path="$USER_HOME$/Desktop/Dépendances Plugins/spigot-1.15.2.jar" />
     </root>
   </artifact>
 </component>
