@@ -3,14 +3,16 @@ package fr.ethan.cachecache.GameElements;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Team {
-	
-	public static ArrayList<Player> members = new ArrayList<Player>();;
+	private GameCycle game;
+	private List<Player> members = new ArrayList<Player>();
     public static String name;
 
-    public Team(String initName) {
-        name = initName;
+    public Team(GameCycle game) {
+        this.game = game;
+        this.members = new ArrayList<>();
     }
 
     public boolean hasMember(Player p){
@@ -31,12 +33,21 @@ public class Team {
     	return members.isEmpty();
     }
     
-    public void add(Player p) {
-    	members.add(p);
+    public void addPlayer(Player p) {
+    	this.members.add(p);
     }
     
-    public void remove(Player p) {
-    	members.remove(p);
+    public void removePlayer(Player p) {
+    	this.members.remove(p);
+
+    	//TODO : à corriger : le registeredPlayers est vide encore
+    	//game.getCacheCachePlayer(p).setTeam(null);
+    }
+
+    public void sendTeamMessage(String msg) {
+        for(Player p : members) {
+            p.sendMessage(msg);
+        }
     }
     
     public void setNameVisible(boolean y) {
@@ -44,12 +55,18 @@ public class Team {
     		p.setCustomNameVisible(y);
     	}
     }
-    
+
+    public void printMembers() { //TODO : à remodifier pour autre utilisation
+        for(Player p : members) {
+            System.out.println(p.getName());
+        }
+    }
+
     public String getName() {
     	return name;
     }
-    
-    public int getSize() {
-    	return members.size();
+
+    public List<Player> getMembers() {
+        return members;
     }
 }

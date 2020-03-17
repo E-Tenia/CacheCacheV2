@@ -10,18 +10,19 @@ import fr.ethan.cachecache.Commands.UserCommands;
 import fr.ethan.cachecache.Commands.AdminCommands;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.ArrayList;
 
 public class CacheCache extends JavaPlugin {
     public static CacheCache plugin;
 
-    // name , task
+    // name , gamecycle
     public static Map<String, GameCycle> gameQueue = new HashMap<>();
+
     public static ArrayList<Player> inGame = new ArrayList<Player>();
 
-    String[] userCommandes = { "test" , "cc" };
+    String[] userCommandes = { "cc" };
     String[] adminCommandes = { "acc" };
 
     @Override
@@ -39,11 +40,6 @@ public class CacheCache extends JavaPlugin {
         new File(plugin.getDataFolder() + File.separator + "games").mkdirs();
         //usercaches directory
         new File(plugin.getDataFolder() + File.separator + "usercaches").mkdirs();
-
-        //test
-        /*for(int i = 0; i < 11; i++){
-            System.out.println(GameCycle.randomGame());
-        }*/
     }
 
     @Override

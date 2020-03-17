@@ -16,29 +16,25 @@ import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.EntityResurrectEvent;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class EventManager implements Listener {
     private CacheCache plugin = CacheCache.plugin;
-    public static boolean cancel;
-    public static boolean playable;
+    public GameCycle cycle;
     public Team hiders;
     public Team seekers;
-    public ArrayList<Player> players = new ArrayList<Player>();
+    public List<Player> players;
     
-    public EventManager(Team hideteam, Team seekteam){
+    public EventManager(GameCycle cycle, Team hideteam, Team seekteam, List<Player> playerList){
        hiders = hideteam;
        seekers = seekteam;
-       for(Player p : hiders.members) {
-           players.add(p);
-       }
-       for(Player p2 : seekers.members) {
-           players.add(p2);
-       }
+       players = playerList;
+
        this.plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
     
@@ -105,29 +101,56 @@ public class EventManager implements Listener {
         String name1 = event.getDamager().getName();
         Entity ent = event.getEntity();//entité ayant été frappée
         String name2 = event.getEntity().getName();
-        if(playable) {
-            if(damager instanceof Player && ent instanceof Player) {//si les deux entités sont des joeurs on vérifie qu'elles sont dans une partie
-                if(seekers.hasMember(Bukkit.getPlayerExact(name1)) && hiders.hasMember(Bukkit.getPlayerExact(name2))){//si c'est le cas on notifie au joueur frappé qu'il a été trouvé et au joueur frappant qu'il l'a trouvé ainsi qu'au reste des joueurs
-                    Bukkit.getPlayerExact(name2).sendMessage(ChatColor.YELLOW + "You got found by " + name1);
-                    Bukkit.getPlayerExact(name1).sendMessage(ChatColor.GREEN + "You found " + name2);
-                    for(Player p : players) {
-                        p.sendMessage(ChatColor.RED + "" + Bukkit.getPlayerExact(name2).getName() + " has been found by " + Bukkit.getPlayerExact(name1).getName());
+
+        if(damager instanceof Player && ent instanceof Player) {//si les deux entités sont des joeurs on vérifie qu'elles sont dans une partie
+            if(seekers.hasMember(Bukkit.getPlayerExact(name1)) && hiders.hasMember(Bukkit.getPlayerExact(name2))){//si c'est le cas on notifie au joueur frappé qu'il a été trouvé et au joueur frappant qu'il l'a trouvé ainsi qu'au reste des joueurs
+                Bukkit.getPlayerExact(name2).sendMessage(ChatColor.RED + "Tu as été trouvé par "+ ChatColor.GOLD + name1);
+                Bukkit.getPlayerExact(name1).sendMessage(ChatColor.GREEN + "Tu as trouvé "+ ChatColor.GOLD + name2);
+                for(Player p : players) {
+                    p.sendMessage("[" + ChatColor.DARK_AQUA + "CacheCache" + ChatColor.RESET + "] : " + ChatColor.RED + "" + Bukkit.getPlayerExact(name2).getName() + ChatColor.GOLD +  " as été trouvé par " + ChatColor.BLUE + Bukkit.getPlayerExact(name1).getName());
+                }
+                hiders.removePlayer(Bukkit.getPlayerExact(ent.getName()));
+                if(hiders.isEmpty()) {//si tous les hiders on été trouvés on le notifie aux joueurs, on vide les listes restantes et on arrete le chronomètre
+                    for (Player p : players) {
+                        p.setGameMode(GameMode.SURVIVAL);
+                        p.sendMessage("[" + ChatColor.DARK_AQUA + "CacheCache" + ChatColor.RESET + "] :" + ChatColor.GOLD + " Tous les hiders ont été trouvé, fin de la partie !");
                     }
-                    hiders.remove(Bukkit.getPlayerExact(ent.getName()));
+                    cycle.cancelGame();
                 }
-            }
-            if(hiders.isEmpty()) {//si tous les hiders on été trouvés on le notifie aux joueurs, on vide les listes restantes et on arrete le chronomètre
-                for (Player p : players) {
-                    p.setGameMode(GameMode.SURVIVAL);
-                    p.sendMessage("All the hiders have been found, game over !");
-                }
-                cancel = true;
             }
         }
     }
+
+    @EventHandler
+    public void onChat(AsyncPlayerChatEvent event){
+        Player player = event.getPlayer();
+        String msg = event.getMessage();
+        System.out.println(hiders.getMembers());
+        System.out.println(seekers.getMembers());
+        System.out.println(players);
+        if(hiders.hasMember(player)){
+            event.setCancelled(true);
+            for(Player p : hiders.getMembers()){
+                p.sendMessage(ChatColor.RED + player.getName() + ChatColor.RESET + " : " + msg);
+            }
+        }
+        else if(seekers.hasMember(player)){
+            event.setCancelled(true);
+            for(Player p : seekers.getMembers()){
+                p.sendMessage(ChatColor.BLUE + player.getName() + ChatColor.RESET + " : " + msg);
+            }
+        }
+        else if(players.contains(player)){
+            event.setCancelled(true);
+            for(Player p : players){
+                p.sendMessage(player.getName() + " : " + msg);
+            }
+        }
+    }
+
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {
-    	
+        event.getPlayer().sendMessage("EventManager active");
     }
     
     //GESTION DES MOUVEMENTS ET DES POSITIONS

@@ -1,13 +1,27 @@
 name: CacheCache
 main: fr.ethan.cachecache.Mains.CacheCache
-version: 1
+version: 2
 commands:
-  test:
-    description: Ceci est une commande de test
-    permission: test.use
-  cc:
-    description: infos, new
-    permission: cc.use
   acc:
     description: infos, new
     permission: acc.use
+  cc:
+    cc.*:
+      description: donne accès à toutes les commandes cc
+      children:
+        cc.leave: true
+        cc.start: true
+        cc.gamequeue: true
+        cc.join: true
+    cc.leave:
+      description: quitter la partie
+      permission: cc.leave.use
+    cc.start:
+      description: lancer une partie (/cc start ou /cc start <nom>)
+      permission: cc.start.use
+    cc.gamequeue:
+      description: voir les parties en cours
+      permission: cc.gamequeue.use
+    cc.join:
+      description: rejoindre une partie
+      permission: cc.join.use

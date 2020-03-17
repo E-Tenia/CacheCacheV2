@@ -44,4 +44,24 @@ public class Broadcast {
             sender.sendMessage("\n§3Commandes des Utilisateurs:\n§6cc start\ncc start <nom de partie>");
         }
     }
+
+    public static void gameLaunch(String name) { //TODO : envoyer que à ceux qui ne sont pas ingame
+        TextComponent header = new TextComponent("["+ChatColor.DARK_AQUA+"CacheCache"+ChatColor.RESET+"] - "+ChatColor.GOLD+"Une partie de CacheCache vient d'être lancée\n");
+
+        TextComponent join1 = new TextComponent(ChatColor.GREEN + "[Rejoindre]");
+        join1.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.BLUE + "Cliquez pour rejoindre").create()));
+        join1.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/cc join "+name));
+
+        TextComponent join2 = new TextComponent(ChatColor.RESET + " ou faites ");
+
+        TextComponent join3 = new TextComponent(ChatColor.GREEN + "/cc join "+name);
+
+        TextComponent launchMessage = new TextComponent();
+        launchMessage.addExtra(header);
+        launchMessage.addExtra(join1);
+        launchMessage.addExtra(join2);
+        launchMessage.addExtra(join3);
+
+        Bukkit.getServer().spigot().broadcast(launchMessage);
+    }
 }

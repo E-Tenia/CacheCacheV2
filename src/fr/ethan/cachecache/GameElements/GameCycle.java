@@ -11,51 +11,61 @@ import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.event.HandlerList;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 
-public class GameCycle extends BukkitRunnable {
+public class GameCycle {
+    enum GameState {
+        LOBBY,
+        GAME;
+    }
+
     private static CacheCache plugin = CacheCache.plugin;
 
+    private HashMap<Player, CacheCachePlayer> registeredPlayer;
+    private Team hiders;
+    private Team seekers;
     public String name;
     public int lobbyTime;
-    public static int gameTime;
-    public static int time;
-    public static Team hiders;
-    public static Team seekers;
-    public static Location spawnPosition;
-    public static ArrayList<Player> playerList = new ArrayList<Player>();
-    public static ArrayList<String> gameList = new ArrayList<String>();
-    public static boolean hasStarted;
+    public int gameTime;
+    public int time;
+    public BukkitTask lobbyTimer;
+    public BukkitTask gameTimer;
+    public Location spawnPosition;
+    public List<Player> playerList = new ArrayList<Player>();
+    public ArrayList<String> gameList = new ArrayList<String>();
+    public GameState state;
 
     public GameCycle(String initName) {
-        //on initialise le EventManager
-        EventManager em = new EventManager(hiders,seekers);
-
         //si lors de la commande on a pas renseigné de nom on lance une partie aléatoire, sinon partie indiquée
-        if(initName == null) {
-            name = randomGame(); }
+        if(initName == null) { name = randomGame(); }
         else { name = initName; }
 
         File file = new File(plugin.getDataFolder() + File.separator + "games", name + ".yml");
         FileConfiguration yamlConfiguration = YamlConfiguration.loadConfiguration(file);
 
+        //teams
+        this.hiders = new Team(this);
+        this.seekers = new Team(this);
+
         //temps
-        lobbyTime = 20/*yamlConfiguration.getInt("lobbyTime")*/; //TODO : rendre ça automatique
+        lobbyTime = 60/*yamlConfiguration.getInt("lobbyTime")*/; //TODO : rendre ça automatique
         gameTime = yamlConfiguration.getInt("Time");
         spawnPosition = yamlConfiguration.getLocation("Location");
         Double Limits = yamlConfiguration.getDouble("limits");
-        time = lobbyTime + gameTime + 10;
+        Broadcast.gameLaunch(name);
+        startLobby();
 
-        hasStarted = false;
+        state = GameState.LOBBY;
     }
 
-    public static int getTime() {
+    public int getTime() {
         return time;
     }
 
@@ -63,70 +73,100 @@ public class GameCycle extends BukkitRunnable {
         return name;
     }
 
-    @Override
-    public void run() {
-        if(time == lobbyTime + gameTime + 10){
-            System.out.println(name);
-            hasStarted = true;
-        }
+    public void startLobby() {
+        int cooldown = 10;
+        time = lobbyTime + cooldown;
 
-        if(time == (gameTime + 10)) {
-            hiders = new Team("hiders");
-            seekers = new Team("seekers");
-            Broadcast.broadcaster("Fin du lobby - téléportation vers la partie"+time);
-        }
-
-        if(time <= (gameTime + 5) && time > gameTime) {
-            Broadcast.broadcaster("Début de la partie dans "+time);
-        }
-        
-        if(time == gameTime) {
-            if(playerList.size() < 2){
-                Broadcast.broadcaster(ChatColor.RED+"Pas assez de joueurs pour commencer la partie.");
-                cancel();
-            }
-        	//lancement partie
-            ArrayList<Player> teams = random(playerList);
-        	for(Player p : teams) {
-        		if(seekers.getSize() >= hiders.getSize()) {
-        			hiders.add(p);
-        			p.setNoDamageTicks(20*60);
-        		}
-        		else {
-        			seekers.add(p);
-        			p.setNoDamageTicks(20*60);
-        			p.addPotionEffect((new PotionEffect(PotionEffectType.BLINDNESS, 20*60, 1)));
-					p.addPotionEffect((new PotionEffect(PotionEffectType.SLOW, 20*60, 100)));
-					p.addPotionEffect((new PotionEffect(PotionEffectType.JUMP, 20*60, 200)));
-        		}
-        		p.teleport(spawnPosition);
-        		p.setGameMode(GameMode.ADVENTURE);
-        	}
-        }
-
-        if(time == 0 || EventManager.cancel) {
-        	for(Player p : playerList) {
-        		p.setGameMode(GameMode.SURVIVAL);
-        		CacheCache.inGame.remove(p);
-                try {
-                    PlayerManager.restoreInventory(p);
-                } catch (Exception e) {
-                    e.printStackTrace();
+        lobbyTimer = new BukkitRunnable() {
+            @Override
+            public void run() {
+                System.out.println("LOBBY");
+                if(time == 0 /*&& GameState.LOBBY*/) {
+                    if(playerList.size() < 2){
+                        for(Player p : playerList) { p.sendMessage(ChatColor.RED+"Pas assez de joueurs pour commencer la partie."); }
+                        cancel();
+                    } else {
+                        cancel();
+                        startGame();
+                    }
                 }
+                ActionBarAPI.sendActionBarToAllPlayers(""+time,-1); //TODO : remplacer par le scoreboard (uniquement sur les joueurs ingame)
+                time--;
             }
-        	
-        	if(!hiders.isEmpty()) {
-        	    //TODO : victoire hiders
-        	}
-            hasStarted = false;
-            CacheCache.gameQueue.remove(this);
-            cancel();
-        }
-        ActionBarAPI.sendActionBarToAllPlayers(""+time,-1); //TODO : remplacer par le scoreboard (uniquement sur les joueurs ingame)
-        time--;
+        }.runTaskTimer(plugin, 0,20);
     }
 
-    public static String randomGame() {
+    public void startGame() {
+        state = GameState.GAME;
+
+        int cooldown = 10;
+        time = gameTime + cooldown;
+
+        playerList = random(playerList);
+
+        for (Player player : playerList) {
+            if (!seekers.hasMember(player) && !hiders.hasMember(player)) {
+                if (seekers.getMembers().size() >= hiders.getMembers().size()) {
+                    setTeamHiders(player);
+                }
+                else {
+                    setTeamSeekers(player);
+                }
+            }
+        }
+
+        for(Player p : playerList) {
+            p.sendMessage("La partie est sur le point de commencer.");
+            p.setNoDamageTicks(20*60);
+            if(hiders.hasMember(p) == true) {
+                p.sendMessage("Tu es "+ChatColor.BLUE+"hider "+ChatColor.RESET+"pour cette partie.");//TODO : changer par titleAPI ?
+            } else if(seekers.hasMember(p) == true) {
+                p.sendMessage("Tu es "+ChatColor.RED+"seeker "+ChatColor.RESET+"pour cette partie.");//TODO : changer par titleAPI ?
+                p.addPotionEffect((new PotionEffect(PotionEffectType.BLINDNESS, 20*60, 1)));
+                p.addPotionEffect((new PotionEffect(PotionEffectType.SLOW, 20*60, 100)));
+                p.addPotionEffect((new PotionEffect(PotionEffectType.JUMP, 20*60, 200)));
+            }
+            p.teleport(spawnPosition);
+            p.setGameMode(GameMode.ADVENTURE);
+        }
+
+        EventManager em = new EventManager(this,hiders,seekers,playerList);
+
+        gameTimer = new BukkitRunnable() {
+            @Override
+            public void run() {
+                System.out.println("GAME");
+                if(time == gameTime){
+                    System.out.println("après le if");
+                } else if(time == 0) {
+                    for(Player p : playerList) {
+                        p.setGameMode(GameMode.SURVIVAL);
+                        try {
+                            PlayerManager.restoreInventory(p);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    if(!hiders.isEmpty()) {
+                        //TODO : victoire hiders
+                    }
+                    CacheCache.gameQueue.remove(this);
+                    cancel();
+                }
+                ActionBarAPI.sendActionBarToAllPlayers(""+time,-1); //TODO : remplacer par le scoreboard (uniquement sur les joueurs ingame)
+                time--;
+            }
+        }.runTaskTimer(plugin, 0,20);
+    }
+
+    public static void seePlayerList(List<Player> list){ //TODO : supprimer après correction  equipes
+        for(Player p: list) {
+            System.out.println(p.getName());
+        }
+    }
+
+    public String randomGame() {
         gameList = new ArrayList<String>(Arrays.asList(GameConfig.listGame()));
 
         for(int i = 0; i < gameList.size(); i++){
@@ -141,7 +181,7 @@ public class GameCycle extends BukkitRunnable {
         return gameList.get(r);
     }
     
-    public ArrayList<Player> random(ArrayList<Player> list){
+    public static List<Player> random(List<Player> list){
 		int min = 0, max = list.size();
         int r = min + (int)(Math.random() * ((max - min) + 1));
         for(int i = 0; i < r; i++) {
@@ -155,7 +195,64 @@ public class GameCycle extends BukkitRunnable {
        return list;
 	}
 
-	public static void printPlayerList(String gameName, Player p) {
+    public void setTeamSeekers(Player player) {
+        if (seekers.hasMember(player)) {
+            player.sendMessage(ChatColor.YELLOW + "Vous êtes déjà dans l'équipe" + ChatColor.BLUE + " seekers");
+            return;
+        }
+        if (hiders.getMembers().size() >= seekers.getMembers().size() && seekers.getMembers().size() - hiders.getMembers().size() != 2) {
+            if (hiders.hasMember(player)) { hiders.removePlayer(player); }
+            seekers.addPlayer(player);
+            player.sendMessage(ChatColor.YELLOW + "Vous avez rejoint la team " + ChatColor.BLUE + "seekers");
+
+        } else
+            player.sendMessage(ChatColor.RED + "Il y a trop de joueur dans cette équipe");
+    }
+
+    public void setTeamHiders(Player player) {
+        if (hiders.hasMember(player)) {
+            player.sendMessage(ChatColor.YELLOW + "Vous êtes déjà dans l'équipe" + ChatColor.RED + " hiders");
+            return;
+        }
+        if (hiders.getMembers().size() <= seekers.getMembers().size() && hiders.getMembers().size() - seekers.getMembers().size() != 2) {
+            if (seekers.hasMember(player)) { seekers.removePlayer(player); }
+            hiders.addPlayer(player);
+            player.sendMessage(ChatColor.YELLOW + "Vous avez rejoint la team " + ChatColor.RED + "hiders");
+        } else
+            player.sendMessage(ChatColor.RED + "Il y a trop de joueur dans cette équipe");
+    }
+
+    public void cancelGame() {
+        //getHandlerList().unregisterAll(em);
+        //HandlerList.unregisterAll(em);
+        if(state == GameState.LOBBY) {
+            lobbyTimer.cancel();
+            if(this.lobbyTimer.isCancelled()){
+                //CacheCache.gameQueue.replace(this.getName(),null);
+                CacheCache.gameQueue.remove(this.getName());
+            }
+        } else if(state == GameState.GAME){
+            gameTimer.cancel();
+            if(this.gameTimer.isCancelled()){
+                //CacheCache.gameQueue.get(this.getName());
+                CacheCache.gameQueue.remove(this.getName());
+            }
+        }
+    }
+
+    public GameCycle getGameCycle() {
+        return this;
+    }
+
+    public CacheCachePlayer getCacheCachePlayer(Player player){
+        return this.registeredPlayer.get(player);
+    }
+
+    public HashMap<Player, CacheCachePlayer> getRegisteredPlayer() {
+        return registeredPlayer;
+    }
+
+	public void printPlayerList(String gameName, Player p) {
         if(gameName.isEmpty()){
             p.sendMessage(ChatColor.RED + "Il n'y a pas de partie en cours.");
         } else if(!CacheCache.gameQueue.containsKey(gameName)){
@@ -170,8 +267,25 @@ public class GameCycle extends BukkitRunnable {
             }
         }
     }
+
+    public void removePlayer(Player p) {
+        playerList.remove(p);
+        try{
+            PlayerManager.restoreInventory(p);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     
     public void addPlayer(Player p) {
     	playerList.add(p);
+        try {
+
+            PlayerManager.saveInventory(p);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
